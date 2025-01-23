@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Network/Packet.hpp>
 
 // Checkpoint coordinates
 constexpr int NUM_CHECKPOINTS = 8;
@@ -51,7 +52,7 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& os, const Car& car) {
-    os << "Car: " << "x: " << car.position.x << ", y: " << car.position.y << ", angle: " << car.angle;
+    os << " x: " << car.position.x << ", y: " << car.position.y << ", angle: " << car.angle;
     return os;
 }
 

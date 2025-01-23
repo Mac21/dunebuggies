@@ -8,8 +8,9 @@ public:
     const float acceleration = 0.2f;
     const float deceleration = 0.3f;
     const float turnSpeed = 0.08f;
+    const std::string id;
 
-    Player(sf::Vector2f startPos = sf::Vector2f(0, 0)) : Car(startPos) {}
+    Player(sf::Vector2f startPos = sf::Vector2f(0, 0)) : Car(startPos), id(PlayerIdentity::generateToken()) {}
 
     void handleInput() {
         updateSpeed();

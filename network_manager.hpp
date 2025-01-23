@@ -21,8 +21,20 @@ public:
         return true;
     }
 
+    void disconnect(const std::string token) {
+        sf::Packet packet;
+        packet << NetworkAction::Disconnect << token;
+        if (socket.send(packet) != sf::Socket::Status::Done) {
+            std::cout << "Failed to send disconnect message to server" << std::endl;
+        }
+        socket.disconnect();
+        connected = false;
+    }
+
     void sendData(sf::Packet& packet) {
+#ifdef DUNEBUGGIES_NET_DEBUG
         std::cout << "Sending data: " << packet.getData() << std::endl;
+#endif
         if (connected) {
             auto status = socket.send(packet);
             if (status != sf::Socket::Status::Done) {
@@ -32,7 +44,9 @@ public:
     }
 
     void broadcast(sf::Packet& packet) {
+#ifdef DUNEBUGGIES_NET_DEBUG
         std::cout << "Broadcasting data: " << packet.getData() << std::endl;
+#endif
         for (auto& client : clients) {
             auto status = client.send(packet);
             if (status != sf::Socket::Status::Done) {
@@ -59,10 +73,11 @@ public:
             for (auto& client : clients) {
                 sf::Packet packet;
                 if (client.receive(packet) != sf::Socket::Status::Done) {
-                    continue;
                     std::cout << "Failed to receive packet" << std::endl;
                 }
+#ifdef DUNEBUGGIES_NET_DEBUG
                 std::cout << "Received data: " << packet.getData() << std::endl;
+#endif
                 packets.push_back(std::move(packet));
             }
         }
