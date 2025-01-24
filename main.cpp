@@ -8,6 +8,7 @@
 #include <functional>
 #include <sstream>
 #include <chrono>
+#include <algorithm>
 
 #include "player_identity.hpp"
 #include "player.hpp"
