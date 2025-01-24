@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Network/Packet.hpp>
+#include <SFML/Graphics/Color.hpp>
 
 // Checkpoint coordinates
 constexpr int NUM_CHECKPOINTS = 8;
@@ -20,11 +21,12 @@ const std::vector<sf::Vector2f> CHECKPOINTS = {
 class Car {
 public:
     sf::Vector2f position;
+    sf::Color color;
     float speed, angle;
     int currentCheckpoint;
 
     Car(sf::Vector2f startPos = sf::Vector2f(0, 0), float startAngle = 0.0f) 
-        : position(startPos), speed(12.0f), angle(startAngle), currentCheckpoint(0) {}
+        : position(startPos), speed(12.0f), angle(startAngle), currentCheckpoint(0), color(rand() % 255, rand() % 255, rand() % 255) {}
 
     void move() {
         position.x += std::sin(angle) * speed;
@@ -52,14 +54,17 @@ private:
 };
 
 std::ostream& operator<<(std::ostream& os, const Car& car) {
-    os << " x: " << car.position.x << ", y: " << car.position.y << ", angle: " << car.angle;
+    os << " color: " << car.color.toInteger() << " x: " << car.position.x << ", y: " << car.position.y << ", angle: " << car.angle;
     return os;
 }
 
 sf::Packet& operator<<(sf::Packet& packet, const Car& car) {
-    return packet << car.position.x << car.position.y << car.angle;
+    return packet << car.color.toInteger() << car.position.x << car.position.y << car.angle;
 }
 
 sf::Packet& operator>>(sf::Packet& packet, Car& car) {
+    std::uint32_t color;
+    packet >> color;
+    car.color = sf::Color(color);
     return packet >> car.position.x >> car.position.y >> car.angle;
 }
