@@ -4,8 +4,8 @@ namespace db {
     class Menu {
     public:
         Menu(sf::Font& font, sf::Color fill_color = sf::Color::White, sf::Color selected_color = sf::Color::Black) : font(font),
-                                                                                                                   fill_color(fill_color),
-                                                                                                                   selected_color(selected_color) {
+                                                                                                                     fill_color(fill_color),
+                                                                                                                     selected_color(selected_color) {
             options = { "Single Player", "Single Player with Bots", "Host", "Join", "Exit" };
             for (auto& option : options) {
                 sf::Text text(font, option, 24);
@@ -17,7 +17,7 @@ namespace db {
         }
 
         void draw(sf::RenderWindow& window) {
-            for (size_t i = 0; i < texts.size(); ++i) {
+            for (size_t i = 0; i < texts.size(); i++) {
                 if (i == selected) {
                     texts[i].setStyle(sf::Text::Bold | sf::Text::Underlined);
                     texts[i].setFillColor(selected_color);
