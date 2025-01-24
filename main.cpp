@@ -87,7 +87,7 @@ int main() {
             }
             // Join
             case 3: {
-                if (network.connectToServer("166.70.232.78")) { // localhost for testing
+                if (network.connectToServer("127.0.0.1")) { // localhost for testing
                     std::cout << "Connected to server\n";
                     gameState.isMultiplayer = true;
                     std::cout << "Connected as token: " << player.id << std::endl;
