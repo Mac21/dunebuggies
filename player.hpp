@@ -22,14 +22,11 @@ private:
     void updateSpeed() {
         float delta;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
-            delta = acceleration;
-            speed += speed < 0 ? -delta : delta;  
+            speed += acceleration;
         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
-            delta = -brake;
-            speed += speed < 0 ? -delta : delta;  
+            speed += -brake;
         } else {
-            delta = -deceleration;
-            speed += speed < 0 ? -delta : delta;  
+            speed += -deceleration;
         }
         speed = std::clamp(speed, 0.0f, maxSpeed);
     }
