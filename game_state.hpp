@@ -2,54 +2,56 @@
 
 #include <SFML/Network/Packet.hpp>
 
-enum class NetworkAction : std::uint8_t {
-    Update,
-    Connect,
-    Disconnect,
-};
+namespace db {
+    enum class NetworkAction : std::uint8_t {
+        Update,
+        Connect,
+        Disconnect,
+    };
 
-sf::Packet& operator<<(sf::Packet& packet, NetworkAction action) {
-    return packet << static_cast<std::uint8_t>(action);
-}
-
-sf::Packet& operator>>(sf::Packet& packet, NetworkAction& action) {
-    std::uint8_t new_action;
-    packet >> new_action;
-    action = static_cast<NetworkAction>(new_action);
-    return packet;
-}
-
-class GameState {
-public:
-    std::unordered_map<std::string, Car*> token_car_map;
-    bool isMultiplayer;
-    bool isServer;
-    bool isBotGame;
-
-    std::vector<sf::Packet> serialize(std::string player_id) {
-        std::vector<sf::Packet> packets;
-        sf::Packet packet;
-        if (isServer) {
-            for (auto& ct : token_car_map) {
-                packet << NetworkAction::Update << ct.first << *ct.second;
-                packets.push_back(std::move(packet));
-            }
-        } else {
-            packet << NetworkAction::Update << player_id << *token_car_map[player_id];
-            packets.push_back(std::move(packet));
-        }
-        return packets;
+    sf::Packet& operator<<(sf::Packet& packet, NetworkAction action) {
+        return packet << static_cast<std::uint8_t>(action);
     }
 
-    void deserialize(sf::Packet& packet, std::string player_id) {
-        NetworkAction currentAction;
-        std::string token;
+    sf::Packet& operator>>(sf::Packet& packet, NetworkAction& action) {
+        std::uint8_t new_action;
+        packet >> new_action;
+        action = static_cast<NetworkAction>(new_action);
+        return packet;
+    }
 
-        if (!(packet >> currentAction >> token)) {
-            return;
+    class GameState {
+    public:
+        std::unordered_map<std::string, Car*> token_car_map;
+        bool isMultiplayer;
+        bool isServer;
+        bool isBotGame;
+
+        std::vector<sf::Packet> serialize(std::string player_id) {
+            std::vector<sf::Packet> packets;
+            sf::Packet packet;
+            if (isServer) {
+                for (auto& ct : token_car_map) {
+                    packet << NetworkAction::Update << ct.first << *ct.second;
+                    packets.push_back(std::move(packet));
+                }
+            }
+            else {
+                packet << NetworkAction::Update << player_id << *token_car_map[player_id];
+                packets.push_back(std::move(packet));
+            }
+            return packets;
         }
 
-        switch (currentAction) {
+        void deserialize(sf::Packet& packet, std::string player_id) {
+            NetworkAction currentAction;
+            std::string token;
+
+            if (!(packet >> currentAction >> token)) {
+                return;
+            }
+
+            switch (currentAction) {
             case NetworkAction::Update: {
                 // Don't update ourself
                 if (token == player_id) {
@@ -60,7 +62,8 @@ public:
                     Car* car = new Car();
                     packet >> *car;
                     token_car_map[token] = car;
-                } else {
+                }
+                else {
                     packet >> *token_car_map[token];
                 }
                 // If we don't have this token it must be a new car
@@ -78,6 +81,7 @@ public:
                 std::cout << "Received an invalid GameStateNetworkAction on deserialize" << std::endl;
                 break;
             }
+            }
         }
-    }
-};
+    };
+}

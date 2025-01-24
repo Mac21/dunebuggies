@@ -24,7 +24,7 @@ constexpr float CAR_RADIUS = 32.0f;
 int main() {
     srand(time(NULL));
 
-    sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Racing Game");
+    sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Dunebuggies");
     window.setFramerateLimit(60);
 
     sf::Texture backgroundTexture, carTexture;
@@ -47,14 +47,14 @@ int main() {
         return -1;  // Error loading font
     }
 
-    Menu menu(font);
+    db::Menu menu(font);
     sf::View menuView(menu.getFirstTextPosition(), sf::Vector2f(window.getSize()) / 2.0f);
-    NetworkManager network;
-    GameState gameState;
+    db::NetworkManager network;
+    db::GameState gameState;
     gameState.isServer = false;
     gameState.isMultiplayer = false;
     gameState.isBotGame = false;
-    Player player(sf::Vector2f(window.getSize()) / 2.0f);
+    db::Player player(sf::Vector2f(window.getSize()) / 2.0f);
     carSprite.setPosition(player.position);
 
     menu.setOnSelect([&](int choice) {
@@ -69,15 +69,15 @@ int main() {
                 gameState.isBotGame = true;
                 gameState.token_car_map.insert({ player.id, &player });
                 for (int i = 0; i < 3; i++) { // Adding 3 bots
-                    auto token = PlayerIdentity::generateToken();
-                    gameState.token_car_map.insert({ token, new Car(sf::Vector2f(window.getSize().x / 2.0f + i * 50, window.getSize().y / 2.0f)) });
+                    auto token = db::PlayerIdentity::generateToken();
+                    gameState.token_car_map.insert({ token, new db::Car(sf::Vector2f(window.getSize().x / 2.0f + i * 50, window.getSize().y / 2.0f)) });
                 }
                 break;
             }
             // Host
             case 2: {
                 if (network.setupServer()) {
-                    std::cout << "Server started on port " << PORT << std::endl;
+                    std::cout << "Server started on port " << db::PORT << std::endl;
                     gameState.isServer = true;
                     gameState.isMultiplayer = true;
                     std::cout << "Started hosting as token: " << player.id << std::endl;
