@@ -121,13 +121,13 @@ int main() {
         if (isMultiplayer) {
             // Handle network events
             for (auto& packet : network.receiveData()) {
-                gameState.deserialize(packet);
+                gameState.deserialize(packet, player.id);
             }
 
             // Sync game state periodically
             auto now = std::chrono::steady_clock::now();
             std::chrono::duration<double> diff = now - lastSyncTime;
-            if (diff.count() > 0.05) { // Sync every 100ms
+            if (diff.count() > 0.1) { // Sync every 100ms
                 if (isServer) {
                     for (auto& packet : gameState.serialize()) {
                         network.broadcast(packet);
@@ -148,7 +148,7 @@ int main() {
             // Moving AI cars
             if (isBotGame) {
                 for (auto& tk : gameState.token_car_map) {
-                    if (tk.second == &player) {
+                    if (tk.first == player.id) {
                         continue;
                     }
 
@@ -177,7 +177,7 @@ int main() {
         };
 
         size_t i = 0;
-        for (auto tk : gameState.token_car_map) {
+        for (auto& tk : gameState.token_car_map) {
             carSprite.setColor(colors[i++ % colors.size()]);
             carSprite.setPosition(tk.second->position);
             carSprite.setRotation(sf::degrees(tk.second->angle * 180.0f / PI));

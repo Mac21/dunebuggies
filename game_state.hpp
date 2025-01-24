@@ -27,54 +27,51 @@ public:
         std::vector<sf::Packet> packets;
         sf::Packet packet;
         for (auto& ct : token_car_map) {
-            packet << NetworkAction::Update << ct.first << ct.second;
+            packet << NetworkAction::Update << ct.first << *ct.second;
             packets.push_back(std::move(packet));
         }
         return packets;
     }
 
-    void deserialize(sf::Packet& packet) {
+    void deserialize(sf::Packet& packet, std::string player_id) {
         NetworkAction currentAction;
-        if (packet >> currentAction) {
-            switch (currentAction) {
-                case NetworkAction::Update: {
-                    std::string token;
-                    if (packet >> token) {
-                        if (token_car_map[token] == NULL || token_car_map[token] == nullptr) {
-                            Car* car = new Car();
-                            if (packet >> *car) {
-                                token_car_map[token] = car;
-                            } else {
-                                std::cout << "Failed to deserialize car from packet" << std::endl;
-                                return;
-                            }
-                        } else {
-                            packet >> *token_car_map[token];
-                        }
-                        // If we don't have this token it must be a new car
-                        std::cout << "Updated Car: " << token << *token_car_map[token] << std::endl;
-                    } else {
-                        std::cout << "Failed to deserialize packet with token: " << token << std::endl;
-                    }
-                    break;
+        std::string token;
+
+        if (!(packet >> currentAction >> token)) {
+            std::cout << "Failed to deserialize packet got: " << packet.getData() << std::endl;
+            return;
+        }
+
+        // Don't update ourself
+        if (token == player_id) {
+            std::cout << "Received a packet intended for instances player no need to update." << std::endl;
+            return;
+        }
+
+        switch (currentAction) {
+            case NetworkAction::Update: {
+                if (token_car_map[token] == NULL || token_car_map[token] == nullptr) {
+                    Car* car = new Car();
+                    packet >> *car;
+                    token_car_map[token] = car;
+                } else {
+                    packet >> *token_car_map[token];
                 }
-                case NetworkAction::Connect: {
-                    break;
-                }
-                case NetworkAction::Disconnect: {
-                    std::string token;
-                    if (packet >> token) {
-                        token_car_map.erase(token);
-                    }
-                    break;
-                }
-                default: {
-                    std::cout << "Received an invalid GameStateNetworkAction on deserialize" << std::endl;
-                    break;
-                }
+                // If we don't have this token it must be a new car
+                std::cout << "Updated Car: " << token << *token_car_map[token] << std::endl;
+                break;
             }
-        } else {
-            std::cout << "Failed to deserialize GameStateNetworkAction" << std::endl;
+            case NetworkAction::Connect: {
+                break;
+            }
+            case NetworkAction::Disconnect: {
+                token_car_map.erase(token);
+                break;
+            }
+            default: {
+                std::cout << "Received an invalid GameStateNetworkAction on deserialize" << std::endl;
+                break;
+            }
         }
     }
 };

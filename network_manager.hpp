@@ -22,10 +22,12 @@ public:
     }
 
     void disconnect(const std::string token) {
+        std::cout << "Networkmanager.disconnect" << std::endl;
         sf::Packet packet;
         packet << NetworkAction::Disconnect << token;
         if (socket.send(packet) != sf::Socket::Status::Done) {
             std::cout << "Failed to send disconnect message to server" << std::endl;
+            return;
         }
         socket.disconnect();
         connected = false;
@@ -38,7 +40,9 @@ public:
         if (connected) {
             auto status = socket.send(packet);
             if (status != sf::Socket::Status::Done) {
+#ifdef DUNEBUGGIES_NET_DEBUG
                 std::cout << "Failed to send socket data with status: " << int(status) << std::endl;
+#endif
             }
         }
     }
@@ -50,7 +54,9 @@ public:
         for (auto& client : clients) {
             auto status = client.send(packet);
             if (status != sf::Socket::Status::Done) {
+#ifdef DUNEBUGGIES_NET_DEBUG
                 std::cout << "Failed to send broadcast data" << std::endl;
+#endif
             }
         }
     }
@@ -60,20 +66,28 @@ public:
         if (connected) {
             sf::Packet packet;
             if (socket.receive(packet) != sf::Socket::Status::Done) {
-                std::cout << "Failed to receive packet" << std::endl;
+#ifdef DUNEBUGGIES_NET_DEBUG
+                std::cout << "Failed to receive server packet" << std::endl;
+#endif
+                return packets;
             }
             packets.push_back(std::move(packet));
         } else { // Server mode, check for new connections and data from clients
             sf::TcpSocket newClient;
             newClient.setBlocking(false);
+
             if (listener.accept(newClient) == sf::Socket::Status::Done) {
                 clients.push_back(std::move(newClient));
                 std::cout << "New client connected. Total clients: " << clients.size() << std::endl;
             }
+
             for (auto& client : clients) {
                 sf::Packet packet;
                 if (client.receive(packet) != sf::Socket::Status::Done) {
-                    std::cout << "Failed to receive packet" << std::endl;
+#ifdef DUNEBUGGIES_NET_DEBUG
+                    std::cout << "Failed to receive client packet" << std::endl;
+#endif
+                    continue;
                 }
 #ifdef DUNEBUGGIES_NET_DEBUG
                 std::cout << "Received data: " << packet.getData() << std::endl;
