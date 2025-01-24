@@ -22,6 +22,8 @@ constexpr float PI = 3.14159265358979323846f;
 constexpr float CAR_RADIUS = 32.0f;
 
 int main() {
+    srand(time(NULL));
+
     sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Racing Game");
     window.setFramerateLimit(60);
 
@@ -49,12 +51,11 @@ int main() {
     sf::View menuView(menu.getFirstTextPosition(), sf::Vector2f(window.getSize()) / 2.0f);
     NetworkManager network;
     GameState gameState;
+    gameState.isServer = false;
+    gameState.isMultiplayer = false;
+    gameState.isBotGame = false;
     Player player(sf::Vector2f(window.getSize()) / 2.0f);
     carSprite.setPosition(player.position);
-
-    bool isServer = false;
-    bool isMultiplayer = false;
-    bool isBotGame = false;
 
     menu.setOnSelect([&](int choice) {
         switch (choice) {
@@ -65,7 +66,7 @@ int main() {
             }
             // Single Player with Bots
             case 1: {
-                isBotGame = true;
+                gameState.isBotGame = true;
                 gameState.token_car_map.insert({ player.id, &player });
                 for (int i = 0; i < 3; i++) { // Adding 3 bots
                     auto token = PlayerIdentity::generateToken();
@@ -77,8 +78,8 @@ int main() {
             case 2: {
                 if (network.setupServer()) {
                     std::cout << "Server started on port " << PORT << std::endl;
-                    isServer = true;
-                    isMultiplayer = true;
+                    gameState.isServer = true;
+                    gameState.isMultiplayer = true;
                     std::cout << "Started hosting as token: " << player.id << std::endl;
                     gameState.token_car_map.insert({ player.id, &player });
                 }
@@ -86,12 +87,12 @@ int main() {
             }
             // Join
             case 3: {
-                if (network.connectToServer("127.0.0.1")) { // localhost for testing
+                if (network.connectToServer("166.70.232.78")) { // localhost for testing
                     std::cout << "Connected to server\n";
-                    isMultiplayer = true;
+                    gameState.isMultiplayer = true;
                     std::cout << "Connected as token: " << player.id << std::endl;
                     gameState.token_car_map.insert({ player.id, &player });
-                    for (auto& packet : gameState.serialize()) {
+                    for (auto& packet : gameState.serialize(player.id)) {
                         network.sendData(packet);
                     }
                 }
@@ -111,7 +112,6 @@ int main() {
     std::chrono::steady_clock::time_point lastSyncTime = std::chrono::steady_clock::now();
 
     while (window.isOpen()) {
-        // srand(time(NULL));
         while (const std::optional<sf::Event> event = window.pollEvent()) {
             if (event->is<sf::Event::Closed>()) {
                 window.close();
@@ -119,7 +119,7 @@ int main() {
             menu.handleInput(event);
         }
 
-        if (isMultiplayer) {
+        if (gameState.isMultiplayer) {
             // Handle network events
             for (auto& packet : network.receiveData()) {
                 gameState.deserialize(packet, player.id);
@@ -128,13 +128,13 @@ int main() {
             // Sync game state periodically
             auto now = std::chrono::steady_clock::now();
             std::chrono::duration<double> diff = now - lastSyncTime;
-            if (diff.count() > 0.1) { // Sync every 100ms
-                if (isServer) {
-                    for (auto& packet : gameState.serialize()) {
+            if (diff.count() > 0.05) { // Sync every 50ms
+                if (gameState.isServer) {
+                    for (auto& packet : gameState.serialize(player.id)) {
                         network.broadcast(packet);
                     }
                 } else {
-                    for (auto& packet : gameState.serialize()) {
+                    for (auto& packet : gameState.serialize(player.id)) {
                         network.sendData(packet);
                     }
                 }
@@ -147,7 +147,7 @@ int main() {
             player.move();
 
             // Moving AI cars
-            if (isBotGame) {
+            if (gameState.isBotGame) {
                 for (auto& tk : gameState.token_car_map) {
                     if (tk.first == player.id) {
                         continue;
@@ -166,20 +166,8 @@ int main() {
         // }
         window.draw(background);
 
-        std::vector<sf::Color> colors = { 
-            sf::Color::Green,
-            sf::Color::Blue,
-            sf::Color::Yellow,
-            sf::Color::Red,
-            sf::Color::White,
-            sf::Color::Black,
-            sf::Color::Cyan,
-            sf::Color::Magenta,
-        };
-
-        size_t i = 0;
         for (auto& tk : gameState.token_car_map) {
-            carSprite.setColor(colors[i++ % colors.size()]);
+            carSprite.setColor(tk.second->color);
             carSprite.setPosition(tk.second->position);
             carSprite.setRotation(sf::degrees(tk.second->angle * 180.0f / PI));
             window.draw(carSprite);

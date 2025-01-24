@@ -22,12 +22,20 @@ sf::Packet& operator>>(sf::Packet& packet, NetworkAction& action) {
 class GameState {
 public:
     std::unordered_map<std::string, Car*> token_car_map;
+    bool isMultiplayer;
+    bool isServer;
+    bool isBotGame;
 
-    std::vector<sf::Packet> serialize() {
+    std::vector<sf::Packet> serialize(std::string player_id) {
         std::vector<sf::Packet> packets;
         sf::Packet packet;
-        for (auto& ct : token_car_map) {
-            packet << NetworkAction::Update << ct.first << *ct.second;
+        if (isServer) {
+            for (auto& ct : token_car_map) {
+                packet << NetworkAction::Update << ct.first << *ct.second;
+                packets.push_back(std::move(packet));
+            }
+        } else {
+            packet << NetworkAction::Update << player_id << *token_car_map[player_id];
             packets.push_back(std::move(packet));
         }
         return packets;
@@ -38,13 +46,14 @@ public:
         std::string token;
 
         if (!(packet >> currentAction >> token)) {
-            std::cout << "Failed to deserialize packet got: " << packet.getData() << std::endl;
             return;
         }
 
         // Don't update ourself
         if (token == player_id) {
+#ifdef DUNEBUGGIES_NET_DEBUG
             std::cout << "Received a packet intended for instances player no need to update." << std::endl;
+#endif
             return;
         }
 
