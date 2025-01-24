@@ -49,16 +49,13 @@ public:
             return;
         }
 
-        // Don't update ourself
-        if (token == player_id) {
-#ifdef DUNEBUGGIES_NET_DEBUG
-            std::cout << "Received a packet intended for instances player no need to update." << std::endl;
-#endif
-            return;
-        }
-
         switch (currentAction) {
             case NetworkAction::Update: {
+                // Don't update ourself
+                if (token == player_id) {
+                    return;
+                }
+
                 if (token_car_map[token] == NULL || token_car_map[token] == nullptr) {
                     Car* car = new Car();
                     packet >> *car;
