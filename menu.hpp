@@ -32,21 +32,29 @@ public:
         if (event->is<sf::Event::KeyPressed>()) {
             auto kpe = event->getIf<sf::Event::KeyPressed>();
             switch (kpe->code) {
-            case sf::Keyboard::Key::Up:
-                if (selected > 0) selected--;
-                break;
-            case sf::Keyboard::Key::Down:
-                if (selected < texts.size() - 1) selected++;
-                break;
-            case sf::Keyboard::Key::Escape:
-                hide(!is_hidden);
-                break;
-            case sf::Keyboard::Key::Enter:
-                if (onSelect) {
-                    onSelect(selected);
-                    hide(true);
+                case sf::Keyboard::Key::Up: {
+                    if (selected > 0) {
+                        selected--;
+                    }
+                    break;
                 }
-                break;
+                case sf::Keyboard::Key::Down: {
+                    if (selected < texts.size() - 1) {
+                        selected++;
+                    }
+                    break;
+                }
+                case sf::Keyboard::Key::Escape: {
+                    hide(!is_hidden);
+                    break;
+                }
+                case sf::Keyboard::Key::Enter: {
+                    if (onSelect) {
+                        onSelect(selected);
+                        hide(true);
+                    }
+                    break;
+                }
             }
         }
     }

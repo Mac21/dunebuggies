@@ -9,13 +9,17 @@ public:
     NetworkManager() : connected(false) {}
 
     bool setupServer() {
-        if (listener.listen(PORT) != sf::Socket::Status::Done) return false;
+        if (listener.listen(PORT) != sf::Socket::Status::Done) {
+            return false;
+        }
         listener.setBlocking(false); // Non-blocking for multiple clients
         return true;
     }
 
     bool connectToServer(const std::string& host) {
-        if (socket.connect(*sf::IpAddress::resolve(host), PORT, sf::seconds(5)) != sf::Socket::Status::Done) return false;
+        if (socket.connect(*sf::IpAddress::resolve(host), PORT, sf::seconds(5)) != sf::Socket::Status::Done) {
+            return false;
+        }
         socket.setBlocking(false);
         connected = true;
         return true;

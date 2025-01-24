@@ -41,13 +41,15 @@ public:
         const auto& target = CHECKPOINTS[currentCheckpoint];
         float beta = angle - std::atan2(target.x - position.x, -target.y + position.y);
 
-        if (std::sin(beta) < 0)
+        if (std::sin(beta) < 0) {
             angle += 0.005f * speed;
-        else
+        } else {
             angle -= 0.005f * speed;
+        }
 
-        if (squaredDistance(target) < 625.0f)  // 25 * 25
+        if (squaredDistance(target) < 625.0f) { // 25 * 25
             currentCheckpoint = (currentCheckpoint + 1) % NUM_CHECKPOINTS;
+        }
     }
 
 private:

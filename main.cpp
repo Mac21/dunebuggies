@@ -173,8 +173,7 @@ int main() {
         if (menu.isVisible()) {
             window.setView(menuView);
             menu.draw(window);
-        }
-        else {
+        } else {
             window.setView(gameView);
         }
         window.display();
