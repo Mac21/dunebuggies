@@ -37,6 +37,8 @@ int main() {
 
     sf::Sprite background(backgroundTexture), carSprite(carTexture);
     background.setScale({ 2.0f, 2.0f });
+    background.setOrigin(sf::Vector2f(backgroundTexture.getSize() / 2u));
+    background.setPosition(window.getView().getCenter());
     carSprite.setOrigin({ 22.0f, 22.0f });
 
     sf::View gameView(sf::FloatRect({ 0.0f, 0.0f }, { 1920.0f, 1080.0f }));
@@ -113,6 +115,13 @@ int main() {
 
     while (window.isOpen()) {
         while (const std::optional<sf::Event> event = window.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
+                if (network.isConnected()) {
+                    network.disconnect(player.id);
+                }
+                window.close();
+                return 0;
+            }
             menu.handleInput(event);
         }
 
@@ -158,9 +167,22 @@ int main() {
 
         window.clear(sf::Color::Black);
         gameView.setCenter(player.position);
-        // For clients, interpolate or predict position based on last known state
-        // if () { TODO: add interpolation logic
-        // }
+
+        sf::Vector2f halfGameViewSize = gameView.getSize() / 2.0f;
+        float backgroundWidth = background.getGlobalBounds().size.x * background.getScale().x;
+        float backgroundHeight = background.getGlobalBounds().size.y * background.getScale().y;
+        
+        // Limit camera movement along the x-axis
+        if (gameView.getCenter().x - halfGameViewSize.x < 0)
+            gameView.move({ halfGameViewSize.x - gameView.getCenter().x, 0 });
+        else if (gameView.getCenter().x + halfGameViewSize.x > backgroundWidth)
+            gameView.move({ backgroundWidth - halfGameViewSize.x - gameView.getCenter().x, 0 });
+          
+        // Limit camera movement along the y-axis
+        if (gameView.getCenter().y - halfGameViewSize.y < 0)
+            gameView.move({ 0, halfGameViewSize.y - gameView.getCenter().y });
+        else if (gameView.getCenter().y + halfGameViewSize.y > backgroundHeight)
+            gameView.move({ 0, backgroundHeight - halfGameViewSize.y - gameView.getCenter().y });
         window.draw(background);
 
         for (auto& tk : gameState.token_car_map) {
