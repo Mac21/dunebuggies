@@ -20,7 +20,6 @@ public:
 
 private:
     void updateSpeed() {
-        float delta;
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
             speed += acceleration;
         } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
