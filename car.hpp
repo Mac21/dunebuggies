@@ -26,7 +26,11 @@ public:
     int currentCheckpoint;
 
     Car(sf::Vector2f startPos = sf::Vector2f(0, 0), float startAngle = 0.0f) 
-        : position(startPos), speed(12.0f), angle(startAngle), currentCheckpoint(0), color(rand() % 255, rand() % 255, rand() % 255) {}
+        : position(startPos),
+          speed(0.0f),
+          angle(startAngle),
+          currentCheckpoint(0),
+          color(rand() % 255, rand() % 255, rand() % 255) {}
 
     void move() {
         position.x += std::sin(angle) * speed;

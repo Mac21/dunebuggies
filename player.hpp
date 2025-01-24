@@ -6,7 +6,8 @@ class Player : public Car {
 public:
     const float maxSpeed = 12.0f;
     const float acceleration = 0.2f;
-    const float deceleration = 0.3f;
+    const float brake = 0.3f;
+    const float deceleration = 0.15f;
     const float turnSpeed = 0.08f;
     const std::string id;
 
@@ -19,10 +20,18 @@ public:
 
 private:
     void updateSpeed() {
-        float delta = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) ? acceleration 
-                    : (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) ? -acceleration : -deceleration);
-        speed += speed < 0 ? -delta : delta;  
-        speed = std::clamp(speed, -maxSpeed, maxSpeed);
+        float delta;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
+            delta = acceleration;
+            speed += speed < 0 ? -delta : delta;  
+        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
+            delta = -brake;
+            speed += speed < 0 ? -delta : delta;  
+        } else {
+            delta = -deceleration;
+            speed += speed < 0 ? -delta : delta;  
+        }
+        speed = std::clamp(speed, 0.0f, maxSpeed);
     }
 
     void updateDirection() {
