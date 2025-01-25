@@ -1,7 +1,6 @@
 #pragma once
 
 #include "car.hpp"
-
 namespace db {
     class Player : public Car {
     public:
@@ -14,7 +13,8 @@ namespace db {
 
         Player(sf::Vector2f startPos = sf::Vector2f(0, 0)) : Car(startPos), id(PlayerIdentity::generateToken()) {}
 
-        void handleInput() {
+        void handleInput() override {
+            Car::handleInput();  // Call base class for jumping and drifting
             updateSpeed();
             updateDirection();
         }
@@ -41,5 +41,4 @@ namespace db {
             }
         }
     };
-
 }

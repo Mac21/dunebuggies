@@ -140,8 +140,9 @@ int main() {
         }
 
         if (!menu.isVisible()) {
-            player.handleInput();
+            player.handleInput();  // This now includes jumping and drifting
             player.move();
+            player.updatePhysics();  // Add physics update for the player
 
             // Moving AI cars
             if (gameState.isBotGame) {
@@ -150,7 +151,9 @@ int main() {
                         continue;
                     }
 
+                    tk.second->handleInput();  // AI cars can now jump or drift if needed
                     tk.second->move();
+                    tk.second->updatePhysics();  // Update physics for AI cars
                     tk.second->findNextCheckpoint();
                 }
             }
