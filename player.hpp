@@ -23,11 +23,9 @@ namespace db {
         void updateSpeed() {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
                 speed += acceleration;
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
+            } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) {
                 speed += -brake;
-            }
-            else {
+            } else {
                 speed += -deceleration;
             }
             speed = std::clamp(speed, 0.0f, maxSpeed);

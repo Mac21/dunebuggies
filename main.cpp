@@ -20,6 +20,7 @@
 // Constants
 constexpr float PI = 3.14159265358979323846f;
 constexpr float CAR_RADIUS = 32.0f;
+constexpr float BOUNCE_FORCE = 2.35f;
 
 int main() {
     srand(time(NULL));
@@ -37,8 +38,6 @@ int main() {
 
     sf::Sprite background(backgroundTexture), carSprite(carTexture);
     background.setScale({ 2.0f, 2.0f });
-    background.setOrigin(sf::Vector2f(backgroundTexture.getSize() / 2u));
-    background.setPosition(window.getView().getCenter());
     carSprite.setOrigin({ 22.0f, 22.0f });
 
     sf::View gameView(sf::FloatRect({ 0.0f, 0.0f }, { 1920.0f, 1080.0f }));
@@ -152,6 +151,21 @@ int main() {
             player.handleInput();
             player.move();
 
+            // Invisible barrier for car driving outside of background image
+            auto gb = background.getGlobalBounds();
+            if (player.position.x >= gb.size.x) {
+                player.position.x = gb.size.x;
+            } else if (player.position.x < 0) {
+                player.position.x = 0;
+            }
+            if (player.position.y >= gb.size.y) {
+                player.position.y = gb.size.y;
+            } else if (player.position.y < 0) {
+                player.position.y = 0;
+            }
+
+            gameView.setCenter(player.position);
+
             // Moving AI cars
             if (gameState.isBotGame) {
                 for (auto& tk : gameState.token_car_map) {
@@ -166,23 +180,24 @@ int main() {
         }
 
         window.clear(sf::Color::Black);
-        gameView.setCenter(player.position);
 
         sf::Vector2f halfGameViewSize = gameView.getSize() / 2.0f;
-        float backgroundWidth = background.getGlobalBounds().size.x * background.getScale().x;
-        float backgroundHeight = background.getGlobalBounds().size.y * background.getScale().y;
+        float backgroundWidth = background.getGlobalBounds().size.x;
+        float backgroundHeight = background.getGlobalBounds().size.y;
         
         // Limit camera movement along the x-axis
-        if (gameView.getCenter().x - halfGameViewSize.x < 0)
+        if (gameView.getCenter().x - halfGameViewSize.x < 0) { // Left edge of the screen
             gameView.move({ halfGameViewSize.x - gameView.getCenter().x, 0 });
-        else if (gameView.getCenter().x + halfGameViewSize.x > backgroundWidth)
+        } else if (gameView.getCenter().x + halfGameViewSize.x > backgroundWidth) {
             gameView.move({ backgroundWidth - halfGameViewSize.x - gameView.getCenter().x, 0 });
+        }
           
         // Limit camera movement along the y-axis
-        if (gameView.getCenter().y - halfGameViewSize.y < 0)
+        if (gameView.getCenter().y - halfGameViewSize.y < 0) {
             gameView.move({ 0, halfGameViewSize.y - gameView.getCenter().y });
-        else if (gameView.getCenter().y + halfGameViewSize.y > backgroundHeight)
+        } else if (gameView.getCenter().y + halfGameViewSize.y > backgroundHeight) {
             gameView.move({ 0, backgroundHeight - halfGameViewSize.y - gameView.getCenter().y });
+        }
         window.draw(background);
 
         for (auto& tk : gameState.token_car_map) {
