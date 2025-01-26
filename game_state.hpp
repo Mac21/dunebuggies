@@ -23,9 +23,8 @@ namespace db {
     class GameState {
     public:
         std::unordered_map<std::string, Car*> token_car_map;
-        bool isMultiplayer;
-        bool isServer;
-        bool isBotGame;
+
+        GameState() : isMultiplayer(false), isServer(false), isBotGame(false) {}
 
         std::vector<sf::Packet> serialize(std::string player_id) {
             std::vector<sf::Packet> packets;
@@ -52,36 +51,48 @@ namespace db {
             }
 
             switch (currentAction) {
-            case NetworkAction::Update: {
-                // Don't update ourself
-                if (token == player_id) {
-                    return;
-                }
+                case NetworkAction::Update: {
+                    // Don't update ourself
+                    if (token == player_id) {
+                        return;
+                    }
 
-                if (token_car_map[token] == NULL || token_car_map[token] == nullptr) {
-                    Car* car = new Car();
-                    packet >> *car;
-                    token_car_map[token] = car;
+                    if (token_car_map[token] == NULL || token_car_map[token] == nullptr) {
+                        Car* car = new Car();
+                        packet >> *car;
+                        token_car_map[token] = car;
+                    }
+                    else {
+                        packet >> *token_car_map[token];
+                    }
+                    // If we don't have this token it must be a new car
+                    std::cout << "Updated Car: " << token << *token_car_map[token] << std::endl;
+                    break;
                 }
-                else {
-                    packet >> *token_car_map[token];
+                case NetworkAction::Connect: {
+                    break;
                 }
-                // If we don't have this token it must be a new car
-                std::cout << "Updated Car: " << token << *token_car_map[token] << std::endl;
-                break;
-            }
-            case NetworkAction::Connect: {
-                break;
-            }
-            case NetworkAction::Disconnect: {
-                token_car_map.erase(token);
-                break;
-            }
-            default: {
-                std::cout << "Received an invalid GameStateNetworkAction on deserialize" << std::endl;
-                break;
-            }
+                case NetworkAction::Disconnect: {
+                    token_car_map.erase(token);
+                    break;
+                }
+                default: {
+                    std::cout << "Received an invalid GameStateNetworkAction on deserialize" << std::endl;
+                    break;
+                }
             }
         }
+
+        void setIsMultiplayer(bool yn) { isMultiplayer = yn; }
+        void setIsServer(bool yn) { isServer = yn; }
+        void setIsBotGame(bool yn) { isBotGame = yn; }
+
+        bool IsMultiplayer() const { return isMultiplayer; }
+        bool IsServer() const { return isServer; }
+        bool IsBotGame() const { return isBotGame; }
+    private:
+        bool isMultiplayer;
+        bool isServer;
+        bool isBotGame;
     };
 }
