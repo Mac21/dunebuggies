@@ -11,10 +11,9 @@ namespace db {
                 "0123456789"
                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                 "abcdefghijklmnopqrstuvwxyz";
-            srand(time(NULL));
             std::string token;
             for (int i = 0; i < 16; i++) {
-                size_t len = (sizeof(alphanum) / sizeof(alphanum[0]));
+                constexpr size_t len = sizeof(alphanum) - 1;
                 token += alphanum[rand() % len];
             }
             return token;
