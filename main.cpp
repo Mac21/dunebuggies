@@ -20,13 +20,13 @@
 // Constants
 constexpr float PI = 3.14159265358979323846f;
 constexpr float CAR_RADIUS = 32.0f;
-constexpr float BOUNCE_FORCE = 2.35f;
 
-int main() {
+int main(int argc, char** argv) {
     srand(time(NULL));
 
     sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Dunebuggies");
     window.setFramerateLimit(60);
+    window.setMouseCursorVisible(false);
 
     sf::Texture backgroundTexture, carTexture;
     if (!backgroundTexture.loadFromFile("images/background.png") || 
