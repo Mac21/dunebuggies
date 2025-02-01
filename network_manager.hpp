@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Network.hpp>
 #include <iostream>
 
 namespace db {
@@ -26,7 +27,7 @@ namespace db {
             return true;
         }
 
-        void disconnect(const std::string token) {
+        void disconnect(const car_id_t token) {
             std::cout << "Networkmanager.disconnect" << std::endl;
             sf::Packet packet;
             packet << NetworkAction::Disconnect << token;

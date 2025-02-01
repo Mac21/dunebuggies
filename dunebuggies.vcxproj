@@ -136,6 +136,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="car.hpp" />
+    <ClInclude Include="client.hpp" />
+    <ClInclude Include="game.hpp" />
     <ClInclude Include="game_state.hpp" />
     <ClInclude Include="menu.hpp" />
     <ClInclude Include="network_manager.hpp" />
@@ -147,6 +149,8 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="client.cpp" />
+    <ClCompile Include="game.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

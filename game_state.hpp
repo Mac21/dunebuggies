@@ -22,11 +22,9 @@ namespace db {
 
     class GameState {
     public:
-        std::unordered_map<std::string, Car*> token_car_map;
+        GameState() {}
 
-        GameState() : isMultiplayer(false), isServer(false), isBotGame(false) {}
-
-        std::vector<sf::Packet> serialize(std::string player_id) {
+        std::vector<sf::Packet> serialize(car_id_t player_id) {
             std::vector<sf::Packet> packets;
             sf::Packet packet;
             if (isServer) {
@@ -42,9 +40,9 @@ namespace db {
             return packets;
         }
 
-        void deserialize(sf::Packet& packet, std::string player_id) {
+        void deserialize(sf::Packet& packet, car_id_t player_id) {
             NetworkAction currentAction;
-            std::string token;
+            car_id_t token;
 
             if (!(packet >> currentAction >> token)) {
                 return;
@@ -82,17 +80,5 @@ namespace db {
                 }
             }
         }
-
-        void setIsMultiplayer(bool yn) { isMultiplayer = yn; }
-        void setIsServer(bool yn) { isServer = yn; }
-        void setIsBotGame(bool yn) { isBotGame = yn; }
-
-        bool IsMultiplayer() const { return isMultiplayer; }
-        bool IsServer() const { return isServer; }
-        bool IsBotGame() const { return isBotGame; }
-    private:
-        bool isMultiplayer;
-        bool isServer;
-        bool isBotGame;
     };
 }

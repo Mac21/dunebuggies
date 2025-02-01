@@ -1,22 +1,16 @@
 #pragma once
 
-#include "iostream"
+#include <cstdint>
+#include <iostream>
 
 namespace db {
     // Simple security for player identification
     class PlayerIdentity {
     public:
-        std::string static generateToken() {
-            static const char alphanum[] =
-                "0123456789"
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                "abcdefghijklmnopqrstuvwxyz";
-            std::string token;
-            for (int i = 0; i < 16; i++) {
-                constexpr size_t len = sizeof(alphanum) - 1;
-                token += alphanum[rand() % len];
-            }
-            return token;
+        car_id_t static generateToken() {
+            car_id_t id;
+            id = rand() % UINT8_MAX;
+            return id;
         }
     };
 }
