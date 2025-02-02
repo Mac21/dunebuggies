@@ -1,32 +1,35 @@
-#include <SFML/Graphics.hpp>
-#include <SFML/Network.hpp>
+#include <algorithm>
+#include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <deque>
+#include <functional>
 #include <iostream>
 #include <memory>
-#include <vector>
-#include <functional>
+#include <SFML/Graphics.hpp>
+#include <SFML/Network.hpp>
 #include <sstream>
-#include <chrono>
-#include <algorithm>
+#include <vector>
 
+#include "car.hpp"
 #include "client.hpp"
-
-// Constants
-constexpr float PI = 3.14159265358979323846f;
-constexpr float CAR_RADIUS = 32.0f;
+#include "game.hpp"
+#include "menu.hpp"
+#include "network_manager.hpp"
+#include "player.hpp"
+#include "player_identity.hpp"
 
 int main(int argc, char** argv) {
+    srand(time(NULL));
+
     sf::RenderWindow window(sf::VideoMode({ 1920, 1080 }), "Dunebuggies");
     window.setFramerateLimit(60);
     window.setMouseCursorVisible(false);
 
-    db::Client client;
-    if (!client.init(window)) {
-        return -1;
+    db::Client client(window, new db::Game(), new db::NetworkManager(), new db::Player(sf::Vector2f{ window.getSize() } / 2.0f));
+    if (client.isReady()) {
+        client.run();
     }
-
-    client.run();
 
     return 0;
 }

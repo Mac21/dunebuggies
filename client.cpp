@@ -1,95 +1,100 @@
-#include "Client.hpp"
+#include "client.hpp"
 
-bool db::Client::init(sf::RenderWindow& window) {
-    srand(time(NULL));
-    mp_window = &window;
+#include "network_manager.hpp"
+#include "menu.hpp"
+#include "player.hpp"
+#include "car.hpp"
 
-    if (!m_backgroundTexture.loadFromFile("images/background.png") || !m_carTexture.loadFromFile("images/car.png")) {
-        return false;  // Error loading textures
+db::Client::Client(sf::RenderWindow& window, Game* g, NetworkManager* nm, Player* p) : m_game(g), m_network(nm), m_player(p) {
+    if (!m_bgTexture.loadFromFile("assets/images/background.png") || !m_carTexture.loadFromFile("assets/images/car.png")) {
+        std::cout << "Failed to load asset image" << std::endl;
+        return;  // Error loading textures
     }
-    m_backgroundTexture.setSmooth(true);
-    m_carTexture.setSmooth(true);
-
-    sf::Sprite m_background(m_backgroundTexture), carSprite(m_carTexture);
-    m_background.setScale({ 2.0f, 2.0f });
-    m_carSprite.setOrigin({ 22.0f, 22.0f });
-
-    sf::View m_gameView(sf::FloatRect({ 0.0f, 0.0f }, { 1920.0f, 1080.0f }));
-    m_gameView.zoom(0.75);
 
     sf::Font font;
-    if (!font.openFromFile("arial.ttf")) {
-        return false;  // Error loading font
+    if (!font.openFromFile("assets/fonts/arial.ttf")) {
+        std::cout << "Failed to load font asset." << std::endl;
+        return;  // Error loading font
     }
 
-    Menu m_menu(font);
-    sf::View m_menuView(m_menu.getFirstTextPosition(), sf::Vector2f(window.getSize()) / 2.0f);
-    Player player(sf::Vector2f(window.getSize()) / 2.0f);
-    m_carSprite.setPosition(player.getPos());
+    m_bgTexture.setSmooth(true);
+    m_carTexture.setSmooth(true);
 
-    m_menu.setOnSelect([&](int choice) {
+    m_bgSprite = new sf::Sprite(m_bgTexture);
+    m_carSprite = new sf::Sprite(m_carTexture);
+    m_bgSprite->setScale({ 2.0f, 2.0f });
+    m_carSprite->setOrigin({ 22.0f, 22.0f });
+
+    m_gameView = sf::View(sf::FloatRect({ 0.0f, 0.0f }, { 1920.0f, 1080.0f }));
+    m_gameView.zoom(0.75);
+
+    m_menu = new Menu(font);
+
+    m_menuView = sf::View(m_menu->getFirstTextPosition(), sf::Vector2f(window.getSize()) / 2.0f);
+    m_carSprite->setPosition(m_player->getPos());
+
+    m_menu->setOnSelect([&](size_t choice) {
         switch (choice) {
             // Single Player
             case 0: {
-                m_game.addPlayer(&player);
+                m_game->addPlayer(m_player);
                 break;
             }
             // Single Player with Bots
             case 1: {
-                m_game.setIsBotGame(true);
-                m_game.addPlayer(&player);
+                m_game->setIsBotGame(true);
+                m_game->addPlayer(m_player);
                 for (int i = 0; i < 3; i++) { // Adding 3 bots
-                    m_game.addPlayer(new Car(sf::Vector2f(window.getSize().x / 2.0f + i * 50, window.getSize().y / 2.0f), 0.0f, 12.0f, PlayerIdentity::generateToken()));
+                    m_game->addPlayer(new Car(sf::Vector2f(window.getSize().x / 2.0f + i * 50, window.getSize().y / 2.0f), 0.0f, 12.0f, PlayerIdentity::generateToken()));
                 }
                 break;
             }
             // Host
             case 2: {
-                if (m_game.getNetworkManager().setupServer()) {
+                if (m_network->setupServer()) {
                     std::cout << "Server started on port " << PORT << std::endl;
-                    m_game.setIsServer(true);
-                    m_game.setIsMultiplayer(true);
-                    std::cout << "Started hosting as token: " << player.getId() << std::endl;
-                    m_game.addPlayer(&player);
+                    m_game->setIsServer(true);
+                    m_game->setIsMultiplayer(true);
+                    std::cout << "Started hosting as token: " << m_player->getId() << std::endl;
+                    m_game->addPlayer(m_player);
                 }
                 break;
             }
             // Join
             case 3: {
-                auto nm = m_game.getNetworkManager();
-                if (nm.connectToServer("127.0.0.1")) { // localhost for testing
+                if (m_network->connectToServer("127.0.0.1")) { // localhost for testing
                     std::cout << "Connected to server\n";
-                    m_game.setIsMultiplayer(true);
-                    std::cout << "Connected as token: " << player.getId() << std::endl;
-                    m_game.addPlayer(&player);
-                    for (auto& packet : m_game.getGameState().serialize(player.getId())) {
-                        nm.sendData(packet);
+                    m_game->setIsMultiplayer(true);
+                    std::cout << "Connected as token: " << m_player->getId() << std::endl;
+                    m_game->addPlayer(m_player);
+                    for (auto& packet : m_network->serialize(*m_game, m_player->getId())) {
+                        m_network->sendData(packet);
                     }
                 }
                 break;
             }
             // Exit
             case 4: {
-                auto nm = m_game.getNetworkManager();
-                if (nm.isConnected()) {
-                    nm.disconnect(player.getId());
+                if (m_network->isConnected()) {
+                    m_network->disconnect(m_player->getId());
                 }
                 mp_window->close();
                 break;
             }
         }
     });
-    return true;
+
+    mp_window = &window;
 }
 
 void db::Client::run() {
     std::chrono::steady_clock::time_point lastSyncTime = std::chrono::steady_clock::now();
     while (mp_window->isOpen() && mp_window->hasFocus()) {
         pollWindowEvents();
-        if (m_game.isMultiplayer()) {
+        if (m_game->isMultiplayer()) {
             // Handle network events
-            for (auto& packet : m_game.getNetworkManager().receiveData()) {
-                m_game.getGameState().deserialize(packet);
+            for (auto& packet : m_network->receiveData()) {
+                m_network->deserialize(packet, *m_game, m_player->getId());
             }
 
             // Sync game state periodically
@@ -97,42 +102,43 @@ void db::Client::run() {
             std::chrono::duration<double> diff = now - lastSyncTime;
 
             if (diff.count() > 0.05) { // Sync every 50ms
-                if (m_game.isServer()) {
-                    for (auto& packet : m_game.getGameState().serialize()) {
-                        m_game.getNetworkManager().broadcast(packet);
+                if (m_game->isServer()) {
+                    for (auto& packet : m_network->serialize(*m_game, m_player->getId())) {
+                        m_network->broadcast(packet);
                     }
                 } else {
-                    for (auto& packet : m_game.getGameState().serialize()) {
-                        m_game.getNetworkManager().sendData(packet);
+                    for (auto& packet : m_network->serialize(*m_game, m_player->getId())) {
+                        m_network->sendData(packet);
                     }
                 }
                 lastSyncTime = now;
             }
         }
 
-        if (!m_menu.isVisible()) {
-            player.handleInput();
-            player.move();
+        if (!m_menu->isVisible()) {
+            m_player->handleInput();
+            m_player->move();
 
             // Invisible barrier for car driving outside of background image
-            auto gb = m_background.getGlobalBounds();
-            if (player.getPos().x >= gb.size.x) {
-                player.getPos().x = gb.size.x;
-            } else if (player.getPos().x < 0) {
-                player.getPos().x = 0;
+            auto gb = m_bgSprite->getGlobalBounds();
+            auto cp = m_player->getPos();
+            if (cp.x >= gb.size.x) {
+                m_player->setPos(gb.size.x, cp.y);
+            } else if (cp.x < 0) {
+                m_player->setPos(0, cp.y);
             }
-            if (player.getPos().y >= gb.size.y) {
-                player.getPos().y = gb.size.y;
-            } else if (player.getPos().y < 0) {
-                player.getPos().y = 0;
+            if (cp.y >= gb.size.y) {
+                m_player->setPos(cp.x, gb.size.y);
+            } else if (m_player->getPos().y < 0) {
+                m_player->setPos(cp.x, 0);
             }
 
-            m_gameView.setCenter(player.getPos());
+            m_gameView.setCenter(m_player->getPos());
 
             // Moving AI cars
-            if (m_game.isBotGame()) {
-                for (auto& tk : m_game.getCars()) {
-                    if (tk.first == player.getId()) {
+            if (m_game->isBotGame()) {
+                for (auto& tk : m_game->getCars()) {
+                    if (tk.first == m_player->getId()) {
                         continue;
                     }
 
@@ -149,28 +155,28 @@ void db::Client::run() {
 void db::Client::pollWindowEvents() {
     while (const std::optional event = mp_window->pollEvent()) {
         if (event->is<sf::Event::Closed>()) {
-            if (m_game.getNetworkManager().isConnected()) {
-                m_game.getNetworkManager().disconnect();
+            if (m_network->isConnected()) {
+                m_network->disconnect(m_player->getId());
             }
             mp_window->close();
             return;
         }
-        m_menu.handleInput(event);
+        m_menu->handleInput(event);
     }
 }
 
 void db::Client::update() {
     static sf::Clock clock;
-    m_game.tick(clock.restart().asSeconds());
-    m_menu.update();
+    m_game->tick(clock.restart().asSeconds());
+    // m_menu.update();
 }
 
 void db::Client::render() {
         mp_window->clear();
 
         sf::Vector2f halfGameViewSize = m_gameView.getSize() / 2.0f;
-        float backgroundWidth = m_background.getGlobalBounds().size.x;
-        float backgroundHeight = m_background.getGlobalBounds().size.y;
+        float backgroundWidth = m_bgSprite->getGlobalBounds().size.x;
+        float backgroundHeight = m_bgSprite->getGlobalBounds().size.y;
         
         // Limit camera movement along the x-axis
         if (m_gameView.getCenter().x - halfGameViewSize.x < 0) { // Left edge of the screen
@@ -185,18 +191,18 @@ void db::Client::render() {
         } else if (m_gameView.getCenter().y + halfGameViewSize.y > backgroundHeight) {
             m_gameView.move({ 0, backgroundHeight - halfGameViewSize.y - m_gameView.getCenter().y });
         }
-        mp_window->draw(m_background);
+        mp_window->draw(*m_bgSprite);
 
-        for (auto& tk : m_game.getCars()) {
-            m_carSprite.setColor(tk.second->getColor());
-            m_carSprite.setPosition(tk.second->getPos());
-            m_carSprite.setRotation(sf::degrees(tk.second->getAngle() * 180.0f / PI));
-            mp_window->draw(m_carSprite);
+        for (auto& tk : m_game->getCars()) {
+            m_carSprite->setColor(tk.second->getColor());
+            m_carSprite->setPosition(tk.second->getPos());
+            m_carSprite->setRotation(sf::degrees(tk.second->getAngle() * 180.0f / PI));
+            mp_window->draw(*m_carSprite);
         }
 
-        if (m_menu.isVisible()) {
+        if (m_menu->isVisible()) {
             mp_window->setView(m_menuView);
-            m_menu.draw(mp_window);
+            m_menu->draw(*mp_window);
         } else {
             mp_window->setView(m_gameView);
         }

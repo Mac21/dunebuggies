@@ -1,9 +1,11 @@
 #pragma once
 
-#include <SFML/System/Angle.hpp>
 #include <SFML/Graphics.hpp>
-#include <SFML/Network/Packet.hpp>
 #include <SFML/Graphics/Color.hpp>
+#include <SFML/Network/Packet.hpp>
+#include <SFML/System/Angle.hpp>
+
+#include "player_identity.hpp"
 
 namespace db {
     // Checkpoint coordinates
@@ -22,39 +24,12 @@ namespace db {
 
     class Car {
     public:
-        friend class Player;
+        Car(sf::Vector2f startPos = sf::Vector2f(0, 0), float startAngle = 0.0f, float startSpeed = 0.0f, player_id_t id = PlayerIdentity::generateToken());
+        void move();
+        void findNextCheckpoint();
 
-        Car(sf::Vector2f startPos = sf::Vector2f(0, 0), float startAngle = 0.0f, float startSpeed = 0.0f, car_id_t id)
-            : m_position(startPos),
-            m_speed(startSpeed),
-            m_angle(startAngle),
-            m_currentCheckpoint(0),
-            m_color(rand() % 255, rand() % 255, rand() % 255),
-            m_id(id) {}
-
-        void move() {
-            m_position.x += std::sin(m_angle) * m_speed;
-            m_position.y -= std::cos(m_angle) * m_speed;
-        }
-
-        void findNextCheckpoint() {
-            const auto& target = CHECKPOINTS[m_currentCheckpoint];
-            float beta = m_angle - std::atan2(target.x - m_position.x, -target.y + m_position.y);
-
-            if (std::sin(beta) < 0) {
-                m_angle += 0.005f * m_speed;
-            }
-            else {
-                m_angle -= 0.005f * m_speed;
-            }
-
-            if (squaredDistance(target) < 625.0f) { // 25 * 25
-                m_currentCheckpoint = (m_currentCheckpoint + 1) % NUM_CHECKPOINTS;
-            }
-        }
-
-        void setId(car_id_t i) { m_id = i; }
-        car_id_t getId() { return m_id; }
+        void setId(player_id_t i) { m_id = i; }
+        virtual player_id_t getId() { return m_id; }
         void setColor(sf::Color c) { m_color = c; }
         sf::Color getColor() const { return m_color; }
         void setPos(float x, float y) {
@@ -64,30 +39,27 @@ namespace db {
         sf::Vector2f getPos() const { return m_position; }
         void setAngle(float a) { m_angle = a; }
         float getAngle() const { return m_angle; }
-    private:
-        float squaredDistance(const sf::Vector2f& other) const {
-            sf::Vector2f diff = m_position - other;
-            return diff.x * diff.x + diff.y * diff.y;
-        }
-
+    protected:
         sf::Vector2f m_position;
         sf::Color m_color;
         float m_speed = 0.0f;
         float m_angle = 0.0f;
         int m_currentCheckpoint = 0;
-        car_id_t m_id;
+        player_id_t m_id;
+    private:
+        float squaredDistance(const sf::Vector2f& other) const;
     };
 
-    std::ostream& operator<<(std::ostream& os, const Car& car) {
+    static std::ostream& operator<<(std::ostream& os, const Car& car) {
         os << " color: " << car.getColor().toInteger() << " x: " << car.getPos().x << ", y: " << car.getPos().y << ", angle: " << car.getAngle();
         return os;
     }
 
-    sf::Packet& operator<<(sf::Packet& packet, const Car& car) {
+    static sf::Packet& operator<<(sf::Packet& packet, const Car& car) {
         return packet << car.getColor().toInteger() << car.getPos().x << car.getPos().y << car.getAngle();
     }
 
-    sf::Packet& operator>>(sf::Packet& packet, Car& car) {
+    static sf::Packet& operator>>(sf::Packet& packet, Car& car) {
         std::uint32_t color;
         float pos_x;
         float pos_y;
@@ -98,5 +70,4 @@ namespace db {
         car.setAngle(angle);
         return packet;
     }
-
 }

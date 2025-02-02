@@ -1,14 +1,16 @@
 #pragma once
 
 #include <cstdint>
-#include <iostream>
+#include <cstdlib>
 
 namespace db {
+    typedef std::uint8_t player_id_t;
+
     // Simple security for player identification
     class PlayerIdentity {
     public:
-        car_id_t static generateToken() {
-            car_id_t id;
+        player_id_t static generateToken() {
+            player_id_t id;
             id = rand() % UINT8_MAX;
             return id;
         }
