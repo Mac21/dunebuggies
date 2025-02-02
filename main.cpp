@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     window.setFramerateLimit(60);
     window.setMouseCursorVisible(false);
 
-    db::Client client(window, new db::Game(), new db::NetworkManager(), new db::Player(sf::Vector2f{ window.getSize() } / 2.0f));
+    db::Client client(window, new db::Game(), new db::NetworkManager(), new db::Player());
     if (client.isReady()) {
         client.run();
     }
