@@ -41,6 +41,11 @@ std::string db::Game::StateAsStr(State s) {
     return "INVALID STATE";
 }
 
+bool db::Game::hasPlayer(player_id_t id) {
+    const auto it = std::find_if(m_cars.begin(), m_cars.end(), [&](const auto p) { return p.first == id; });
+    return it != m_cars.end();
+}
+
 void db::Game::addPlayer(Car* p) {
     if (p == nullptr) {
         return;

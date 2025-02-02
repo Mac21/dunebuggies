@@ -36,6 +36,7 @@ namespace db {
         void setIsBotGame(bool b) { m_isBotGame = b; }
         bool isBotGame() const { return m_isBotGame; }
 
+        bool hasPlayer(player_id_t id);
         void addPlayer(Car* p);
         std::unordered_map<player_id_t, Car*> getCars() { return m_cars; }
 	private:
