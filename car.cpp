@@ -10,6 +10,9 @@ db::Car::Car(sf::Vector2f startPos, float startAngle, float startSpeed, player_i
 void db::Car::move() {
     m_position.x += std::sin(m_angle) * m_speed;
     m_position.y -= std::cos(m_angle) * m_speed;
+#ifdef DEBUG
+    std::cout << "ID: " << std::to_string(m_id) << " X: " << m_position.x << " Y: " << m_position.y << std::endl;
+#endif // DEBUG
 }
 
 void db::Car::findNextCheckpoint() {

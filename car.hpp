@@ -4,6 +4,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Network/Packet.hpp>
 #include <SFML/System/Angle.hpp>
+#include <iostream>
 
 #include "player_identity.hpp"
 
@@ -11,20 +12,21 @@ namespace db {
     // Checkpoint coordinates
     constexpr int NUM_CHECKPOINTS = 8;
 
+    // TODO: Fix checkpoints since start position has changed to what I have deemed the start line.
     const std::vector<sf::Vector2f> CHECKPOINTS = {
-        {300, 610},
+        {270, 1900}, // Start line
+        {500, 3300},
         {1270, 430},
         {1380, 2380},
         {1900, 2460},
         {1970, 1700},
         {2550, 1680},
         {2560, 3150},
-        {500, 3300}
     };
 
     class Car {
     public:
-        Car(sf::Vector2f startPos = sf::Vector2f(0, 0), float startAngle = 0.0f, float startSpeed = 0.0f, player_id_t id = PlayerIdentity::generateToken());
+        Car(sf::Vector2f startPos = sf::Vector2f(CHECKPOINTS[0]), float startAngle = 0.0f, float startSpeed = 0.0f, player_id_t id = PlayerIdentity::generateToken());
         void move();
         void findNextCheckpoint();
 

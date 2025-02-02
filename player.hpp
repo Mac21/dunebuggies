@@ -5,7 +5,7 @@
 namespace db {
     class Player : public Car {
     public:
-        Player(sf::Vector2f startPos = sf::Vector2f(0, 0));
+        Player(sf::Vector2f startPos = sf::Vector2f(CHECKPOINTS[0]));
 
         void handleInput();
     private:
