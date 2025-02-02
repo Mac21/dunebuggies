@@ -37,38 +37,46 @@ db::Client::Client(sf::RenderWindow& window, Game* g, NetworkManager* nm, Player
         switch (choice) {
             // Single Player
             case 0: {
-                m_game->addPlayer(m_player);
+                if (!m_game->hasPlayer(m_player->getId())) {
+                    m_game->addPlayer(m_player);
+                }
                 break;
             }
             // Single Player with Bots
             case 1: {
-                m_game->setIsBotGame(true);
-                m_game->addPlayer(m_player);
-                for (int i = 0; i < 3; i++) { // Adding 3 bots
-                    m_game->addPlayer(new Car(sf::Vector2f(window.getSize().x / 2.0f + i * 50, window.getSize().y / 2.0f), 0.0f, 12.0f, PlayerIdentity::generateToken()));
+                if (!m_game->isBotGame()) {
+                    m_game->setIsBotGame(true);
+                    m_game->addPlayer(m_player);
+                    for (int i = 0; i < 3; i++) { // Adding 3 bots
+                        m_game->addPlayer(new Car(sf::Vector2f{ CHECKPOINTS[0].x + i * 50, CHECKPOINTS[0].y + i * 50 }, 0.0f, 12.0f, PlayerIdentity::generateToken()));
+                    }
                 }
                 break;
             }
             // Host
             case 2: {
-                if (m_network->setupServer()) {
-                    std::cout << "Server started on port " << PORT << std::endl;
-                    m_game->setIsServer(true);
-                    m_game->setIsMultiplayer(true);
-                    std::cout << "Started hosting as token: " << m_player->getId() << std::endl;
-                    m_game->addPlayer(m_player);
+                if (!m_game->isServer()) {
+                    if (m_network->setupServer()) {
+                        std::cout << "Server started on port " << PORT << std::endl;
+                        m_game->setIsServer(true);
+                        m_game->setIsMultiplayer(true);
+                        std::cout << "Started hosting as token: " << m_player->getId() << std::endl;
+                        m_game->addPlayer(m_player);
+                    }
                 }
                 break;
             }
             // Join
             case 3: {
-                if (m_network->connectToServer("127.0.0.1")) { // localhost for testing
-                    std::cout << "Connected to server\n";
-                    m_game->setIsMultiplayer(true);
-                    std::cout << "Connected as token: " << m_player->getId() << std::endl;
-                    m_game->addPlayer(m_player);
-                    for (auto& packet : m_network->serialize(*m_game, m_player->getId())) {
-                        m_network->sendData(packet);
+                if (!m_game->isMultiplayer()) {
+                    if (m_network->connectToServer(getHostAddr())) { // localhost for testing
+                        std::cout << "Connected to server: " << getHostAddr() << std::endl;
+                        m_game->setIsMultiplayer(true);
+                        std::cout << "Connected as token: " << m_player->getId() << std::endl;
+                        m_game->addPlayer(m_player);
+                        for (auto& packet : m_network->serialize(*m_game, m_player->getId())) {
+                            m_network->sendData(packet);
+                        }
                     }
                 }
                 break;
@@ -82,14 +90,22 @@ db::Client::Client(sf::RenderWindow& window, Game* g, NetworkManager* nm, Player
                 break;
             }
         }
+        return;
     });
 
     mp_window = &window;
 }
 
 void db::Client::run() {
-    std::chrono::steady_clock::time_point lastSyncTime = std::chrono::steady_clock::now();
-    while (mp_window->isOpen() && mp_window->hasFocus()) {
+    while (mp_window->isOpen()) {
+        std::chrono::steady_clock::time_point lastSyncTime = std::chrono::steady_clock::now();
+
+        if (!mp_window->hasFocus()) {
+            if (!m_menu->isVisible()) {
+                m_menu->hide(false);
+            }
+        }
+
         pollWindowEvents();
         if (m_game->isMultiplayer()) {
             // Handle network events
