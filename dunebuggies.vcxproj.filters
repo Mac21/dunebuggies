@@ -13,18 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="images">
-      <UniqueIdentifier>{d0c0b9b6-5122-4953-ac3d-1c7ba771d2ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="sfx">
-      <UniqueIdentifier>{1aa1a656-f87b-4ad3-ab55-a36490e5a2d9}</UniqueIdentifier>
+    <Filter Include="assets">
+      <UniqueIdentifier>{4ab539b1-e191-4699-a91f-66c016b6ac80}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="car.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="game_state.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="menu.hpp">
@@ -62,6 +56,18 @@
     <ClCompile Include="client.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="network_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="car.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="player.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="dunebuggies.rc">
@@ -69,16 +75,21 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="images\background.png">
-      <Filter>images</Filter>
+    <Font Include="assets\fonts\arial.ttf">
+      <Filter>assets</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\images\background.png">
+      <Filter>assets</Filter>
     </Image>
-    <Image Include="images\car.png">
-      <Filter>images</Filter>
+    <Image Include="assets\images\car.png">
+      <Filter>assets</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Media Include="sfx\car_engine.wav">
-      <Filter>sfx</Filter>
+    <Media Include="assets\sfx\car_engine.wav">
+      <Filter>assets</Filter>
     </Media>
   </ItemGroup>
 </Project>
