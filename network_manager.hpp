@@ -1,11 +1,8 @@
 #pragma once
 
-#include "player_identity.hpp"
-
-#include <iostream>
 #include <SFML/Network.hpp>
 
-#include "car.hpp"
+#include "player_identity.hpp"
 #include "game.hpp"
 
 namespace db {
@@ -30,14 +27,14 @@ namespace db {
 
     class NetworkManager {
     public:
-        NetworkManager() : connected(false) {}
+        NetworkManager() : connected(false), packets() {}
         bool setupServer();
         bool connectToServer(const std::string& host);
         void disconnect(player_id_t id);
         void sendData(sf::Packet& packet);
         void broadcast(sf::Packet& packet);
-        std::vector<sf::Packet> receiveData();
 
+        std::vector<sf::Packet>& receiveData();
         std::vector<sf::Packet>& serialize(Game& game, player_id_t player_id);
         void deserialize(sf::Packet& packet, Game& game, player_id_t player_id);
 
@@ -46,6 +43,7 @@ namespace db {
         sf::TcpListener listener;
         sf::TcpSocket socket;
         std::vector<sf::TcpSocket> clients;
+        std::vector<sf::Packet> packets;
         bool connected;
     };
 }

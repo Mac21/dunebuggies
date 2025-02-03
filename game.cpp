@@ -1,6 +1,8 @@
 #include "game.hpp"
 #include "car.hpp"
 
+#include <algorithm>
+
 db::Game::Game() : m_currentState(Game::State::Inactive) {
     m_cars = std::unordered_map<player_id_t, Car*>{};
 }

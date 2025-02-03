@@ -60,8 +60,7 @@ void db::NetworkManager::broadcast(sf::Packet& packet) {
     }
 }
 
-std::vector<sf::Packet> db::NetworkManager::receiveData() {
-    std::vector<sf::Packet> packets;
+std::vector<sf::Packet>& db::NetworkManager::receiveData() {
     if (connected) {
         sf::Packet packet;
         if (socket.receive(packet) != sf::Socket::Status::Done) {
@@ -99,16 +98,15 @@ std::vector<sf::Packet> db::NetworkManager::receiveData() {
 }
 
 std::vector<sf::Packet>& db::NetworkManager::serialize(db::Game& game, player_id_t player_id) {
-    std::vector<sf::Packet> packets = {};
-
-    sf::Packet packet;
     if (game.isServer()) {
         for (auto& p : game.getCars()) {
+            sf::Packet packet;
             packet << NetworkAction::Update << p.first << p.second;
             packets.push_back(std::move(packet));
         }
     }
     else {
+        sf::Packet packet;
         packet << NetworkAction::Update << player_id << game.getCars()[player_id];
         packets.push_back(std::move(packet));
     }

@@ -5,6 +5,7 @@
 #include <SFML/Network/Packet.hpp>
 #include <SFML/System/Angle.hpp>
 #include <iostream>
+#include <cmath>
 
 #include "player_identity.hpp"
 

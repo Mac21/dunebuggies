@@ -1,5 +1,7 @@
 #include "player.hpp"
 
+#include <algorithm>
+
 db::Player::Player(sf::Vector2f startPos) : Car(startPos) {}
 
 void db::Player::handleInput() {
