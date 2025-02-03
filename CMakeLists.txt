@@ -16,8 +16,8 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-file(GLOB DUNEBUGGIES_SOURCES .cpp)
-file(GLOB DUNEBUGGIES_HEADERS .hpp)
+file(GLOB DUNEBUGGIES_SOURCES *.cpp)
+file(GLOB DUNEBUGGIES_HEADERS *.hpp)
 
 add_executable(
   dunebuggies
