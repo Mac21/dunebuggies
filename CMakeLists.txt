@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.0)
-project(RacingGame)
+cmake_minimum_required(VERSION 3.10)
+project(dunebuggies)
 
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
@@ -20,11 +20,11 @@ file(GLOB DUNEBUGGIES_SOURCES .cpp)
 file(GLOB DUNEBUGGIES_HEADERS .hpp)
 
 add_executable(
-  main
+  dunebuggies
   main.cpp
   ${DUNEBUGGIES_SOURCES}
   ${DUNEBUGGIES_HEADERS}
 )
 
-target_compile_features(main PRIVATE cxx_std_17)
-target_link_libraries(main PRIVATE SFML::Graphics SFML::Network SFML::System SFML::Window)
+target_compile_features(dunebuggies PRIVATE cxx_std_17)
+target_link_libraries(dunebuggies PRIVATE SFML::Graphics SFML::Network SFML::System SFML::Window)
