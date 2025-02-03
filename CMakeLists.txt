@@ -18,6 +18,8 @@ FetchContent_MakeAvailable(SFML)
 
 file(GLOB DUNEBUGGIES_SOURCES *.cpp)
 file(GLOB DUNEBUGGIES_HEADERS *.hpp)
+# Copy assets to build directory
+file(COPY ./assets DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 add_executable(
   dunebuggies
