@@ -4,6 +4,7 @@
 #include "menu.hpp"
 #include "player.hpp"
 #include "car.hpp"
+#include <SFML/Audio.hpp>
 
 db::Client::Client(sf::RenderWindow& window, Game* g, NetworkManager* nm, Player* p) : m_game(g), m_network(nm), m_player(p) {
     if (!m_bgTexture.loadFromFile("assets/images/background.png") || !m_carTexture.loadFromFile("assets/images/car.png")) {
@@ -15,6 +16,13 @@ db::Client::Client(sf::RenderWindow& window, Game* g, NetworkManager* nm, Player
     if (!font.openFromFile("assets/fonts/arial.ttf")) {
         std::cout << "Failed to load font asset." << std::endl;
         return;  // Error loading font
+    }
+
+    for (auto& p : m_audioBufferMap) {
+        if (!p.second.loadFromFile("assets/sfx/"+p.first)) {
+            std::cout << "Failed to load sound " << p.first << " asset." << std::endl;
+            return;
+        }
     }
 
     m_bgTexture.setSmooth(true);
@@ -97,6 +105,7 @@ db::Client::Client(sf::RenderWindow& window, Game* g, NetworkManager* nm, Player
 }
 
 void db::Client::run() {
+    sf::Sound* f_carSound = createSoundFromFile("car_engine.wav");
     while (mp_window->isOpen()) {
         std::chrono::steady_clock::time_point lastSyncTime = std::chrono::steady_clock::now();
 
@@ -223,4 +232,12 @@ void db::Client::render() {
             mp_window->setView(m_gameView);
         }
         mp_window->display();
+}
+
+sf::Sound* db::Client::createSoundFromFile(const std::string sn) {
+    if (m_audioBufferMap.count(sn) < 1) {
+        return nullptr;
+    }
+    sf::Sound* s = new sf::Sound(m_audioBufferMap[sn]);
+    return s;
 }

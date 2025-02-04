@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/Audio.hpp>
+#include <unordered_map>
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Clock.hpp>
@@ -19,6 +21,7 @@ namespace db {
         Client(sf::RenderWindow&, Game*, NetworkManager*, Player*);
         void run();
 
+        sf::Sound* createSoundFromFile(const std::string sn);
         const std::string& getHostAddr() { return m_hostAddr; }
         void setHostAddr(const std::string& ha) { m_hostAddr = ha; }
         bool isReady() {
@@ -41,6 +44,9 @@ namespace db {
         sf::RenderWindow* mp_window = nullptr;
         sf::Sprite* m_carSprite = nullptr;
         sf::Sprite* m_bgSprite = nullptr;
+        std::unordered_map<std::string, sf::SoundBuffer> m_audioBufferMap = {
+            {"car_engine.wav", sf::SoundBuffer()},
+        };
         Menu* m_menu = nullptr;
         Game* m_game = nullptr;
         NetworkManager* m_network = nullptr;
