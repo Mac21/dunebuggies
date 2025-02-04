@@ -29,4 +29,4 @@ add_executable(
 )
 
 target_compile_features(dunebuggies PRIVATE cxx_std_17)
-target_link_libraries(dunebuggies PRIVATE SFML::Graphics SFML::Network SFML::System SFML::Window)
+target_link_libraries(dunebuggies PRIVATE SFML::Graphics SFML::Network SFML::System SFML::Window SFML::Audio)
